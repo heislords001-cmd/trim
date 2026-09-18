@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #F3F1EA;
+  --surface: #FFFFFF;
+  --surface-2: #EAE7DD;
+  --border: #E1DDD1;
+  --text: #17140F;
+  --text-muted: #726D61;
+  --accent: #A5312A;
+  --accent-ink: #FFFFFF;
+  --gold: #A9822F;
+  --font-display: "Fraunces", serif;
+}
+
+[data-theme="dark"] {
+  --bg: #101012;
+  --surface: #1A1A1D;
+  --surface-2: #222226;
+  --border: #2C2C31;
+  --text: #F2F0E8;
+  --text-muted: #9A968C;
+  --accent: #E2564B;
+  --accent-ink: #17140F;
+  --gold: #D9B24C;
+}
+
+html, body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.leaflet-container {
+  background: var(--surface);
+  border-radius: 18px;
+}
+
+.input {
+  @apply w-full rounded-lg border border-border bg-surface px-4 py-3 text-sm text-textPrimary outline-none placeholder:text-textMuted focus:border-accent;
+}
+
+.btn-primary {
+  @apply rounded-full bg-accent px-4 py-3 text-sm font-medium text-accentInk transition-opacity hover:opacity-90 disabled:opacity-60;
+}
