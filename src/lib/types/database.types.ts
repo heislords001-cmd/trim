@@ -159,6 +159,10 @@ export interface Database {
         Args: { search_lat: number; search_lng: number; radius_km?: number; max_results?: number };
         Returns: NearbyBarberRow[];
       };
+      nearby_external_listings: {
+        Args: { search_lat: number; search_lng: number; radius_km?: number; max_results?: number };
+        Returns: NearbyExternalListingRow[];
+      };
       upsert_business_location: {
         Args: {
           p_barber_id: string;
