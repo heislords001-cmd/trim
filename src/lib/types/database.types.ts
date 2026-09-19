@@ -142,18 +142,28 @@ export interface DiscoveryListing {
 
 // Minimal Database type so @supabase/ssr generics compile.
 // Replace with the real generated type once you run supabase:types.
+//
+// Important: Tables/Views/Functions must be present even when empty, and
+// each table needs `Relationships`, or TypeScript's structural check
+// (`Database["public"] extends GenericSchema`) silently fails and every
+// .from()/.rpc() call falls back to an untyped signature — which shows up
+// as confusing "not assignable to type 'undefined'" errors on .rpc() calls
+// that otherwise look correct.
 export interface Database {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> };
-      barber_profiles: { Row: BarberProfile; Insert: Partial<BarberProfile>; Update: Partial<BarberProfile> };
-      business_locations: { Row: BusinessLocation; Insert: Partial<BusinessLocation>; Update: Partial<BusinessLocation> };
-      services: { Row: Service; Insert: Partial<Service>; Update: Partial<Service> };
-      business_hours: { Row: BusinessHour; Insert: Partial<BusinessHour>; Update: Partial<BusinessHour> };
-      barber_images: { Row: BarberImage; Insert: Partial<BarberImage>; Update: Partial<BarberImage> };
-      reviews: { Row: Review; Insert: Partial<Review>; Update: Partial<Review> };
-      bookings: { Row: Booking; Insert: Partial<Booking>; Update: Partial<Booking> };
+      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile>; Relationships: [] };
+      barber_profiles: { Row: BarberProfile; Insert: Partial<BarberProfile>; Update: Partial<BarberProfile>; Relationships: [] };
+      business_locations: { Row: BusinessLocation; Insert: Partial<BusinessLocation>; Update: Partial<BusinessLocation>; Relationships: [] };
+      services: { Row: Service; Insert: Partial<Service>; Update: Partial<Service>; Relationships: [] };
+      business_hours: { Row: BusinessHour; Insert: Partial<BusinessHour>; Update: Partial<BusinessHour>; Relationships: [] };
+      barber_images: { Row: BarberImage; Insert: Partial<BarberImage>; Update: Partial<BarberImage>; Relationships: [] };
+      reviews: { Row: Review; Insert: Partial<Review>; Update: Partial<Review>; Relationships: [] };
+      bookings: { Row: Booking; Insert: Partial<Booking>; Update: Partial<Booking>; Relationships: [] };
+      conversations: { Row: Conversation; Insert: Partial<Conversation>; Update: Partial<Conversation>; Relationships: [] };
+      messages: { Row: Message; Insert: Partial<Message>; Update: Partial<Message>; Relationships: [] };
     };
+    Views: Record<string, never>;
     Functions: {
       nearby_barbers: {
         Args: { search_lat: number; search_lng: number; radius_km?: number; max_results?: number };

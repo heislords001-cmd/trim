@@ -46,19 +46,33 @@ export async function listBarbersForAdmin(status?: string): Promise<AdminBarberR
   const supabase = createClient();
   let query = supabase
     .from("barber_profiles")
-    .select("id, business_name, slug, status, is_verified, created_at, business_locations(city)")
+    .select("id, business_name, slug, status, is_verified, created_at")
     .order("created_at", { ascending: false });
 
   if (status) query = query.eq("status", status);
 
-  const { data } = await query;
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    business_name: row.business_name,
-    slug: row.slug,
-    status: row.status,
-    is_verified: row.is_verified,
-    created_at: row.created_at,
-    city: row.business_locations?.[0]?.city ?? null
+  const { data: barbers } = await query;
+  if (!barbers || barbers.length === 0) return [];
+
+  // Plain query + in-memory join instead of an embedded
+  // `business_locations(city)` select — see the comment in
+  // actions/chat.ts for why, with a hand-written Database type.
+  const { data: locations } = await supabase
+    .from("business_locations")
+    .select("barber_id, city")
+    .in(
+      "barber_id",
+      barbers.map((b) => b.id)
+    );
+  const cityByBarber = new Map((locations ?? []).map((l) => [l.barber_id, l.city]));
+
+  return barbers.map((b) => ({
+    id: b.id,
+    business_name: b.business_name,
+    slug: b.slug,
+    status: b.status,
+    is_verified: b.is_verified,
+    created_at: b.created_at,
+    city: cityByBarber.get(b.id) ?? null
   }));
 }

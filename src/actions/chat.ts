@@ -42,8 +42,11 @@ export interface ConversationSummary {
 }
 
 // Works for both sides: a customer sees the barber's name on each row,
-// a barber sees the customer's name — same query, just returning
-// whichever side isn't the signed-in user.
+// a barber sees the customer's name — same shape either way. Deliberately
+// avoids PostgREST's embedded `table(column)` select syntax and does two
+// plain queries + an in-memory join instead: with a hand-written Database
+// type (no Relationships metadata), the embedded-select generic can
+// silently mistype or fail to compile, and this sidesteps that entirely.
 export async function listMyConversations(): Promise<ConversationSummary[]> {
   const supabase = createClient();
   const {
@@ -57,31 +60,49 @@ export async function listMyConversations(): Promise<ConversationSummary[]> {
   if (isBarber) {
     const { data: barber } = await supabase.from("barber_profiles").select("id").eq("owner_id", user.id).maybeSingle();
     if (!barber) return [];
-    const { data } = await supabase
+
+    const { data: conversations } = await supabase
       .from("conversations")
-      .select("id, last_message_at, profiles!conversations_customer_id_fkey(full_name)")
+      .select("id, customer_id, last_message_at")
       .eq("barber_id", barber.id)
       .order("last_message_at", { ascending: false });
-    return (data ?? []).map((row: any) => ({
-      id: row.id,
-      otherPartyName: row.profiles?.full_name || "Customer",
+    if (!conversations || conversations.length === 0) return [];
+
+    const customerIds = conversations.map((c) => c.customer_id);
+    const { data: customers } = await supabase.from("profiles").select("id, full_name").in("id", customerIds);
+    const nameById = new Map((customers ?? []).map((c) => [c.id, c.full_name]));
+
+    return conversations.map((c) => ({
+      id: c.id,
+      otherPartyName: nameById.get(c.customer_id) || "Customer",
       otherPartyLogo: null,
-      lastMessageAt: row.last_message_at
+      lastMessageAt: c.last_message_at
     }));
   }
 
-  const { data } = await supabase
+  const { data: conversations } = await supabase
     .from("conversations")
-    .select("id, last_message_at, barber_profiles(business_name, logo_url)")
+    .select("id, barber_id, last_message_at")
     .eq("customer_id", user.id)
     .order("last_message_at", { ascending: false });
+  if (!conversations || conversations.length === 0) return [];
 
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    otherPartyName: row.barber_profiles?.business_name ?? "Barber",
-    otherPartyLogo: row.barber_profiles?.logo_url ?? null,
-    lastMessageAt: row.last_message_at
-  }));
+  const barberIds = conversations.map((c) => c.barber_id);
+  const { data: barbers } = await supabase
+    .from("barber_profiles")
+    .select("id, business_name, logo_url")
+    .in("id", barberIds);
+  const barberById = new Map((barbers ?? []).map((b) => [b.id, b]));
+
+  return conversations.map((c) => {
+    const barber = barberById.get(c.barber_id);
+    return {
+      id: c.id,
+      otherPartyName: barber?.business_name ?? "Barber",
+      otherPartyLogo: barber?.logo_url ?? null,
+      lastMessageAt: c.last_message_at
+    };
+  });
 }
 
 export async function listMessages(conversationId: string) {
