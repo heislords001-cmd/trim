@@ -26,7 +26,7 @@ export default function LocationGate() {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        router.push(`/?lat=${position.coords.latitude}&lng=${position.coords.longitude}`);
+        router.push(`/find?lat=${position.coords.latitude}&lng=${position.coords.longitude}`);
       },
       () => {
         setLocating(false);
@@ -49,7 +49,7 @@ export default function LocationGate() {
 
   function searchThisArea() {
     const params = new URLSearchParams({ lat: String(pin.lat), lng: String(pin.lng), q: city });
-    router.push(`/?${params.toString()}`);
+    router.push(`/find?${params.toString()}`);
   }
 
   return (

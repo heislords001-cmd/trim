@@ -11,7 +11,9 @@ hundred rows without dragging the whole table to the client.
 Working end to end:
 - Schema + PostGIS geo search + RLS (`supabase/*.sql`)
 - Auth (Supabase Auth, role stored on `profiles`, trigger auto-creates the row)
-- Location-gated home: no map on arrival — pick "use my location" or enter
+- Static marketing homepage at `/` — no client hooks, no Supabase calls,
+  nothing that can throw at request time. The actual app lives at `/find`.
+- Location-gated search at `/find`: no map on arrival — pick "use my location" or enter
   city/state, confirm on a small pin-drop map, *then* the real map+list
   search loads (`components/discovery/LocationGate.tsx`)
 - Customer discovery: list/map (Leaflet + OpenStreetMap, no API key needed), filters, distance/rating/price sort, open-now filter

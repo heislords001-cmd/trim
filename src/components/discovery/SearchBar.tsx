@@ -26,7 +26,7 @@ export default function SearchBar() {
         params.set("lat", position.coords.latitude.toString());
         params.set("lng", position.coords.longitude.toString());
         params.delete("q");
-        router.push(`/?${params.toString()}`);
+        router.push(`/find?${params.toString()}`);
       },
       () => {
         setLocating(false);

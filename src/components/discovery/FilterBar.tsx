@@ -16,7 +16,7 @@ export default function FilterBar() {
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
-    router.push(`/?${params.toString()}`);
+    router.push(`/find?${params.toString()}`);
   }
 
   const radius = searchParams.get("radius") ?? "5";
