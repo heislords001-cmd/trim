@@ -1,13 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { Database } from "@/lib/types/database.types";
 
-// Server-side client for Server Components, Server Actions and Route Handlers.
-// Reads/writes the session via Next's cookie store so RLS sees the real user.
+// Server-side client for Server Components, Server Actions and Route
+// Handlers. Reads/writes the session via Next's cookie store so RLS sees
+// the real user.
+//
+// Deliberately untyped — see the comment in lib/supabase/client.ts for why.
 export function createClient() {
   const cookieStore = cookies();
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
