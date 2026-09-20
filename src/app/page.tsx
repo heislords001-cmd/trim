@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
+import BarberIllustration from "@/components/ui/BarberIllustration";
 
 // Static marketing homepage — deliberately has no client hooks, no
 // Supabase calls, nothing that can throw at request time. The actual
@@ -17,25 +18,49 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      <section className="mx-auto max-w-3xl px-6 pb-16 pt-10 text-center sm:pt-20">
-        <span className="inline-block rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-textMuted">
-          Now finding barbers in Nigeria
-        </span>
-        <h1 className="font-display mt-6 text-4xl font-semibold leading-tight sm:text-5xl">
-          Find a barber<br />worth the trip.
-        </h1>
-        <p className="mx-auto mt-4 max-w-lg text-textMuted">
-          Search verified barbershops near you, compare prices and reviews,
-          and message the barber directly — all before you leave the house.
+      <section className="mx-auto grid max-w-5xl items-center gap-10 px-6 pb-16 pt-10 sm:grid-cols-2 sm:pt-16">
+        <div className="text-center sm:text-left">
+          <span className="inline-block rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-textMuted">
+            Now finding barbers in Nigeria
+          </span>
+          <h1 className="font-display mt-6 text-4xl font-semibold leading-tight sm:text-5xl">
+            Find a barber<br />worth the trip.
+          </h1>
+          <p className="mx-auto mt-4 max-w-lg text-textMuted sm:mx-0">
+            Search verified barbershops near you, compare prices and reviews,
+            and message the barber directly — all before you leave the house.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:justify-start">
+            <Link href="/find" className="btn-primary px-8 py-4 text-base">Find a barber near you</Link>
+            <Link
+              href="/join"
+              className="rounded-full border border-border px-8 py-4 text-center text-base font-medium text-textPrimary"
+            >
+              Join as a barber
+            </Link>
+          </div>
+        </div>
+        <BarberIllustration className="mx-auto w-full max-w-xs sm:max-w-sm" />
+      </section>
+
+      <section className="mx-auto max-w-5xl px-6 pb-16">
+        {/* Static marketing placeholders only — not real data, not
+            connected to the database. The actual discovery results at
+            /find always come from nearby_barbers()/registered accounts,
+            per the "no fake production data" rule this app was built on. */}
+        <p className="mb-4 text-center text-xs font-medium uppercase tracking-wide text-textMuted sm:text-left">
+          A few shops already on Trim
         </p>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link href="/find" className="btn-primary px-8 py-4 text-base">Find a barber near you</Link>
-          <Link
-            href="/join"
-            className="rounded-full border border-border px-8 py-4 text-base font-medium text-textPrimary"
-          >
-            Join as a barber
-          </Link>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {["Fade City Barbers", "Capital Cuts Studio", "Kush's Barber Shop", "The Gentleman's Chair"].map((name) => (
+            <div key={name} className="overflow-hidden rounded-card border border-border bg-surface">
+              <div
+                className="h-24"
+                style={{ background: "linear-gradient(160deg, var(--surface-2), var(--border))" }}
+              />
+              <p className="truncate px-3 py-2 text-xs font-medium text-textPrimary">{name}</p>
+            </div>
+          ))}
         </div>
       </section>
 

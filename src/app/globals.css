@@ -2,38 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Clean black & white, minimal accent — gold is used only for star
+   ratings and small highlights, everything else is strict grayscale.
+   Values are space-separated RGB triples so Tailwind's opacity
+   modifiers (bg-accent/15 etc.) work — see tailwind.config.ts. */
 :root {
-  --bg: #F3F1EA;
-  --surface: #FFFFFF;
-  --surface-2: #EAE7DD;
-  --border: #E1DDD1;
-  --text: #17140F;
-  --text-muted: #726D61;
-  --accent: #A5312A;
-  --accent-ink: #FFFFFF;
-  --gold: #A9822F;
+  --bg: 255 255 255;
+  --surface: 255 255 255;
+  --surface-2: 242 242 242;
+  --border: 227 227 227;
+  --text: 10 10 10;
+  --text-muted: 107 107 107;
+  --accent: 17 17 17;
+  --accent-ink: 255 255 255;
+  --gold: 176 141 62;
   --font-display: "Fraunces", serif;
 }
 
 [data-theme="dark"] {
-  --bg: #101012;
-  --surface: #1A1A1D;
-  --surface-2: #222226;
-  --border: #2C2C31;
-  --text: #F2F0E8;
-  --text-muted: #9A968C;
-  --accent: #E2564B;
-  --accent-ink: #17140F;
-  --gold: #D9B24C;
+  --bg: 10 10 10;
+  --surface: 20 20 20;
+  --surface-2: 31 31 31;
+  --border: 42 42 42;
+  --text: 242 242 242;
+  --text-muted: 158 158 158;
+  --accent: 255 255 255;
+  --accent-ink: 10 10 10;
+  --gold: 212 177 90;
 }
 
 html, body {
-  background-color: var(--bg);
-  color: var(--text);
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
 }
 
 .leaflet-container {
-  background: var(--surface);
+  background: rgb(var(--surface));
   border-radius: 18px;
 }
 
