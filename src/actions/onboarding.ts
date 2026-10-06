@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils/format";
 import { revalidatePath } from "next/cache";
+import { PREVIEW_MODE } from "@/lib/preview-mode";
 
 export interface ActionResult<T = undefined> {
   ok: boolean;
@@ -18,6 +19,8 @@ export async function createBarberAccount(input: {
   phone: string;
   password: string;
 }): Promise<ActionResult<{ userId: string }>> {
+  if (PREVIEW_MODE) return { ok: true, data: { userId: "preview-owner-id" } };
+
   const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
     email: input.email,
@@ -38,6 +41,8 @@ export async function createBarberProfile(input: {
   whatsappNumber: string;
   logoUrl: string | null;
 }): Promise<ActionResult<{ barberId: string; slug: string }>> {
+  if (PREVIEW_MODE) return { ok: true, data: { barberId: "preview-barber-id", slug: slugify(input.businessName) || "preview-shop" } };
+
   const supabase = createClient();
   const baseSlug = slugify(input.businessName);
 
@@ -75,6 +80,8 @@ export async function saveBarberLocation(input: {
   lat: number;
   lng: number;
 }): Promise<ActionResult> {
+  if (PREVIEW_MODE) return { ok: true };
+
   const supabase = createClient();
   const { error } = await supabase.rpc("upsert_business_location", {
     p_barber_id: input.barberId,
@@ -96,6 +103,8 @@ export async function saveBarberServices(
   barberId: string,
   services: { name: string; priceNaira: number; durationMinutes: number | null }[]
 ): Promise<ActionResult> {
+  if (PREVIEW_MODE) return { ok: true };
+
   const supabase = createClient();
   const { error: deleteError } = await supabase.from("services").delete().eq("barber_id", barberId);
   if (deleteError) return { ok: false, error: deleteError.message };
@@ -120,6 +129,8 @@ export async function saveBarberHours(
   barberId: string,
   hours: { dayOfWeek: number; isOpen: boolean; openTime: string | null; closeTime: string | null }[]
 ): Promise<ActionResult> {
+  if (PREVIEW_MODE) return { ok: true };
+
   const supabase = createClient();
   const { error } = await supabase.from("business_hours").upsert(
     hours.map((h) => ({
@@ -142,6 +153,8 @@ export async function saveBarberImages(
   barberId: string,
   images: { url: string; type: "shop" | "work" | "logo" }[]
 ): Promise<ActionResult> {
+  if (PREVIEW_MODE) return { ok: true };
+
   const supabase = createClient();
   if (images.length === 0) return { ok: true };
   const { error } = await supabase.from("barber_images").insert(
@@ -168,6 +181,8 @@ export async function setBarberStatus(
   barberId: string,
   status: "approved" | "rejected" | "suspended"
 ): Promise<ActionResult> {
+  if (PREVIEW_MODE) return { ok: true }; // nothing real to update against yet
+
   const supabase = createClient();
   const { error } = await supabase.from("barber_profiles").update({ status }).eq("id", barberId);
   if (error) return { ok: false, error: error.message };

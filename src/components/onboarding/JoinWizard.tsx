@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { dayLabel } from "@/lib/utils/format";
+import { PREVIEW_MODE } from "@/lib/preview-mode";
 import {
   createBarberAccount,
   createBarberProfile,
@@ -121,6 +122,13 @@ export default function JoinWizard() {
   async function handleFileUpload(files: FileList | null) {
     if (!files || !barberId) return;
     setUploading(true);
+    if (PREVIEW_MODE) {
+      // No real storage bucket yet — use local object URLs so photos
+      // still show up in the review step while browsing.
+      setPhotoUrls((prev) => [...prev, ...Array.from(files).map((f) => URL.createObjectURL(f))]);
+      setUploading(false);
+      return;
+    }
     const supabase = createClient();
     const uploaded: string[] = [];
     for (const file of Array.from(files)) {
@@ -180,6 +188,10 @@ export default function JoinWizard() {
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
+                if (PREVIEW_MODE) {
+                  setLogoUrl(URL.createObjectURL(file));
+                  return;
+                }
                 const supabase = createClient();
                 const path = `pending/${Date.now()}-${file.name}`;
                 const { error } = await supabase.storage.from("barber-logos").upload(path, file);

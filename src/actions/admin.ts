@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PREVIEW_MODE, SAMPLE_ADMIN_OVERVIEW, SAMPLE_ADMIN_BARBERS } from "@/lib/preview-mode";
 
 export interface AdminOverview {
   totalBarbers: number;
@@ -12,6 +13,8 @@ export interface AdminOverview {
 // RLS (is_admin() is required for these rows to even be visible), so this
 // is safe to call straight from a Server Component.
 export async function getAdminOverview(): Promise<AdminOverview> {
+  if (PREVIEW_MODE) return SAMPLE_ADMIN_OVERVIEW;
+
   const supabase = createClient();
 
   const [{ count: total }, { count: pending }, { count: approved }, { count: suspended }, { count: customers }] =
@@ -43,6 +46,10 @@ export interface AdminBarberRow {
 }
 
 export async function listBarbersForAdmin(status?: string): Promise<AdminBarberRow[]> {
+  if (PREVIEW_MODE) {
+    return status ? SAMPLE_ADMIN_BARBERS.filter((b) => b.status === status) : SAMPLE_ADMIN_BARBERS;
+  }
+
   const supabase = createClient();
   let query = supabase
     .from("barber_profiles")

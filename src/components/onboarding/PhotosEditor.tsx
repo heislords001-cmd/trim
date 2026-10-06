@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { saveBarberImages } from "@/actions/onboarding";
+import { PREVIEW_MODE } from "@/lib/preview-mode";
 
 export default function PhotosEditor({
   barberId,
@@ -17,6 +18,11 @@ export default function PhotosEditor({
   async function handleFileUpload(files: FileList | null) {
     if (!files) return;
     setUploading(true);
+    if (PREVIEW_MODE) {
+      setUrls((prev) => [...prev, ...Array.from(files).map((f) => URL.createObjectURL(f))]);
+      setUploading(false);
+      return;
+    }
     const supabase = createClient();
     const uploaded: string[] = [];
     for (const file of Array.from(files)) {

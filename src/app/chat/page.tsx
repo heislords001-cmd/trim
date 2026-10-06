@@ -3,13 +3,16 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { listMyConversations } from "@/actions/chat";
 import ConversationList from "@/components/chat/ConversationList";
+import { PREVIEW_MODE } from "@/lib/preview-mode";
 
 export default async function ChatInboxPage() {
-  const supabase = createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login?redirect=/chat");
+  if (!PREVIEW_MODE) {
+    const supabase = createClient();
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    if (!user) redirect("/auth/login?redirect=/chat");
+  }
 
   const conversations = await listMyConversations();
 

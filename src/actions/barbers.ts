@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { isOpenNow } from "@/lib/utils/format";
 import type { NearbyBarberRow, NearbyExternalListingRow, DiscoveryListing, BusinessHour } from "@/lib/types/database.types";
+import { PREVIEW_MODE, SAMPLE_BARBER } from "@/lib/preview-mode";
 
 export interface DiscoverParams {
   lat: number;
@@ -31,6 +32,29 @@ export async function discoverNearbyBarbers({
   openOnly = false,
   verifiedOnly = false
 }: DiscoverParams): Promise<DiscoverResult> {
+  if (PREVIEW_MODE) {
+    return {
+      listings: [
+        {
+          id: SAMPLE_BARBER.id,
+          source: "platform",
+          name: SAMPLE_BARBER.business_name,
+          slug: SAMPLE_BARBER.slug,
+          logoUrl: SAMPLE_BARBER.logo_url,
+          ratingAverage: SAMPLE_BARBER.rating_average,
+          ratingCount: SAMPLE_BARBER.rating_count,
+          isVerified: SAMPLE_BARBER.is_verified,
+          address: SAMPLE_BARBER.location.address,
+          city: SAMPLE_BARBER.location.city,
+          distanceMeters: 350,
+          startingPrice: 1500
+        }
+      ],
+      locations: { [SAMPLE_BARBER.id]: [lat, lng] },
+      openStatus: { [SAMPLE_BARBER.id]: true }
+    };
+  }
+
   const supabase = createClient();
 
   const [{ data: nearbyBarbers, error: barberError }, { data: nearbyExternal, error: externalError }] = await Promise.all([
@@ -147,6 +171,8 @@ export interface BarberProfileDetail {
 // admins can still preview a pending profile because of the RLS policy
 // on barber_profiles (status = 'approved' OR owner_id = auth.uid() OR is_admin()).
 export async function getBarberBySlug(slug: string): Promise<BarberProfileDetail | null> {
+  if (PREVIEW_MODE) return slug === SAMPLE_BARBER.slug ? SAMPLE_BARBER : null;
+
   const supabase = createClient();
 
   const { data: barber, error } = await supabase
@@ -187,6 +213,8 @@ export async function getBarberBySlug(slug: string): Promise<BarberProfileDetail
 // `.limit(1)` is there so this still works if that's ever relaxed to
 // one owner managing several locations).
 export async function getOwnBarberProfile() {
+  if (PREVIEW_MODE) return SAMPLE_BARBER;
+
   const supabase = createClient();
   const {
     data: { user }

@@ -1,10 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { createClient } from "@supabase/supabase-js";
+import { PREVIEW_MODE } from "@/lib/preview-mode";
 
 // Protects /dashboard (barber-only) and /admin (admin-only).
 // This is the real gate — RLS is the backstop if anything slips past it.
 export async function middleware(request: NextRequest) {
+  // PREVIEW_MODE: skip everything, including touching Supabase — if env
+  // vars aren't set yet, even instantiating the client here would throw
+  // before a single page gets a chance to render.
+  if (PREVIEW_MODE) return NextResponse.next();
+
   const { response, user } = await updateSession(request);
   const path = request.nextUrl.pathname;
 

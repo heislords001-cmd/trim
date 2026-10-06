@@ -3,12 +3,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { PREVIEW_MODE, SAMPLE_CONVERSATIONS, SAMPLE_MESSAGES } from "@/lib/preview-mode";
 
 // Called from the "Message" button on a barber's public profile. Reuses
 // an existing conversation if one already exists for this pair (the
 // unique(customer_id, barber_id) constraint makes that safe to rely on)
 // instead of creating a new thread every time someone hits the button.
 export async function startConversation(barberId: string) {
+  if (PREVIEW_MODE) redirect(`/chat/${SAMPLE_CONVERSATIONS[0].id}`);
+
   const supabase = createClient();
   const {
     data: { user }
@@ -48,6 +51,8 @@ export interface ConversationSummary {
 // type (no Relationships metadata), the embedded-select generic can
 // silently mistype or fail to compile, and this sidesteps that entirely.
 export async function listMyConversations(): Promise<ConversationSummary[]> {
+  if (PREVIEW_MODE) return SAMPLE_CONVERSATIONS;
+
   const supabase = createClient();
   const {
     data: { user }
@@ -106,6 +111,8 @@ export async function listMyConversations(): Promise<ConversationSummary[]> {
 }
 
 export async function listMessages(conversationId: string) {
+  if (PREVIEW_MODE) return SAMPLE_MESSAGES;
+
   const supabase = createClient();
   const { data } = await supabase
     .from("messages")
@@ -116,12 +123,14 @@ export async function listMessages(conversationId: string) {
 }
 
 export async function sendMessage(conversationId: string, body: string) {
+  if (!body.trim()) return { ok: false, error: "Message can't be empty" };
+  if (PREVIEW_MODE) return { ok: true }; // ChatThread appends it locally, see its PREVIEW_MODE branch
+
   const supabase = createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not signed in" };
-  if (!body.trim()) return { ok: false, error: "Message can't be empty" };
 
   const { error } = await supabase
     .from("messages")

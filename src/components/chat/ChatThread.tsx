@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { sendMessage } from "@/actions/chat";
+import { PREVIEW_MODE } from "@/lib/preview-mode";
 import type { Message } from "@/lib/types/database.types";
 
 export default function ChatThread({
@@ -20,8 +21,10 @@ export default function ChatThread({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Live updates: anyone typing in this conversation (from either side)
-  // shows up immediately without a page refresh.
+  // shows up immediately without a page refresh. Skipped in PREVIEW_MODE
+  // since there's no real Supabase project/table to subscribe to yet.
   useEffect(() => {
+    if (PREVIEW_MODE) return;
     const supabase = createClient();
     const channel = supabase
       .channel(`messages:${conversationId}`)
@@ -49,7 +52,18 @@ export default function ChatThread({
     setDraft("");
     const result = await sendMessage(conversationId, body);
     setSending(false);
-    if (!result.ok) setDraft(body); // put it back so nothing's lost
+    if (!result.ok) {
+      setDraft(body); // put it back so nothing's lost
+      return;
+    }
+    // No real DB row means no realtime INSERT event will arrive — append
+    // it locally so sending still feels real while browsing in preview mode.
+    if (PREVIEW_MODE) {
+      setMessages((prev) => [
+        ...prev,
+        { id: `local-${Date.now()}`, conversation_id: conversationId, sender_id: currentUserId, body, read_at: null, created_at: new Date().toISOString() }
+      ]);
+    }
   }
 
   return (
